@@ -132,8 +132,17 @@
     .hint { margin: 16px 0 0; text-align: center; color: var(--muted); font-size: 11px; }
     .footer { margin-top: 24px; text-align: center; color: var(--muted); font-size: 11px; letter-spacing: .2px; }
     .footer span { color: var(--accent); padding: 0 5px; }
-    .results { text-align: center; padding-top: 32px; padding-bottom: 32px; }
+    .results { position: relative; overflow: hidden; text-align: center; padding-top: 32px; padding-bottom: 32px; }
     .reaction { font-size: 58px; line-height: 1.3; margin-bottom: 18px; animation: correct-pop .6s ease; }
+    .results.celebrating { border-color: var(--accent); background: radial-gradient(ellipse at 50% 0, #b7a3ff30, transparent 55%), var(--surface); box-shadow: 0 20px 70px #00000020, 0 0 32px #b7a3ff20; }
+    .celebrating .reaction { display: inline-block; position: relative; filter: drop-shadow(0 0 12px #f4c76955); animation: celebration-pop .8s ease; }
+    .celebrating .reaction::before, .celebrating .reaction::after { position: absolute; top: 10px; color: var(--accent); font-size: 19px; }
+    .celebrating .reaction::before { content: "✦"; left: -30px; }
+    .celebrating .reaction::after { content: "✧"; right: -30px; }
+    .celebration-badge { display: inline-block; margin: 0 0 12px; padding: 5px 12px; color: var(--accent); background: #b7a3ff20; border: 1px solid #b7a3ff55; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+    .celebration-confetti { display: none; position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .celebrating .celebration-confetti { display: block; }
+    .celebration-confetti span { position: absolute; top: var(--top); left: var(--left); width: 7px; height: 11px; border-radius: 2px; background: var(--color); opacity: .8; transform: rotate(var(--angle)); animation: confetti-fall 2.6s ease-out var(--delay) both; }
     .results h2 { font-size: 29px; margin-bottom: 9px; }
     .result-copy { color: var(--muted); font-size: 14px; margin: 0 auto 23px; max-width: 330px; }
     .final-score { font-size: 65px; line-height: 1.2; color: var(--accent); font-weight: 750; letter-spacing: -3px; }
@@ -147,6 +156,8 @@
     .enter { animation: appear .35s ease; }
     @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
     @keyframes correct-pop { 0% { transform: scale(.96); } 55% { transform: scale(1.025); } 100% { transform: scale(1); } }
+    @keyframes celebration-pop { 0% { transform: scale(.6) rotate(-12deg); opacity: 0; } 65% { transform: scale(1.15) rotate(6deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
+    @keyframes confetti-fall { 0% { opacity: 0; transform: translateY(-70px) rotate(0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--drift), 200px) rotate(var(--angle)); } }
     @keyframes appear { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
     @media (prefers-color-scheme: light) {
       :root { --bg: #f4f2f8; --surface: #fff; --option: #faf9fd; --border: #e2dfec; --text: #252238; --muted: #737087; --accent: #7354c4; --accent-ink: #fff; --green: #23774c; --green-bg: #eaf7ef; --red: #b93855; --red-bg: #fff0f2; --track: #eae6f2; }
@@ -238,7 +249,20 @@
       <p class="hint" id="hint">Choose your answer to continue</p>
     </section>
     <section class="card results" id="results" aria-labelledby="result-title" hidden>
+      <div class="celebration-confetti" aria-hidden="true">
+        <span style="--left: 7%; --top: 12%; --color: #f3c96c; --delay: .1s; --drift: 25px; --angle: 240deg"></span>
+        <span style="--left: 15%; --top: 21%; --color: #e990b8; --delay: .35s; --drift: -15px; --angle: -220deg"></span>
+        <span style="--left: 25%; --top: 10%; --color: #7edfc2; --delay: .2s; --drift: 20px; --angle: 310deg"></span>
+        <span style="--left: 34%; --top: 17%; --color: #b7a3ff; --delay: .45s; --drift: -25px; --angle: -260deg"></span>
+        <span style="--left: 47%; --top: 7%; --color: #f3c96c; --delay: .3s; --drift: 18px; --angle: 280deg"></span>
+        <span style="--left: 59%; --top: 13%; --color: #7edfc2; --delay: .15s; --drift: -20px; --angle: -300deg"></span>
+        <span style="--left: 70%; --top: 8%; --color: #e990b8; --delay: .4s; --drift: 25px; --angle: 250deg"></span>
+        <span style="--left: 80%; --top: 20%; --color: #f3c96c; --delay: .2s; --drift: -18px; --angle: -240deg"></span>
+        <span style="--left: 90%; --top: 11%; --color: #b7a3ff; --delay: .3s; --drift: 15px; --angle: 300deg"></span>
+        <span style="--left: 95%; --top: 24%; --color: #7edfc2; --delay: .5s; --drift: -25px; --angle: -270deg"></span>
+      </div>
       <div class="reaction" id="reaction" aria-hidden="true"></div>
+      <div><p class="celebration-badge" id="celebration-badge" hidden>✦ Stellar mission ✦</p></div>
       <p class="eyebrow">Mission complete</p>
       <h2 id="result-title" tabindex="-1"></h2>
       <p class="result-copy" id="result-copy"></p>
@@ -344,6 +368,8 @@
             ? ["🧑‍🚀", "A promising space cadet!", "You've made some great discoveries. There's a whole universe left to explore."]
             : ["🌱", "Every explorer starts here.", "You just discovered ten things about our universe. Curiosity is your best launchpad."];
       $("quiz").hidden = true;
+      $("results").classList.toggle("celebrating", score >= 8);
+      $("celebration-badge").hidden = score < 8;
       $("results").hidden = false;
       $("reaction").textContent = reaction[0];
       $("result-title").textContent = reaction[1];
@@ -375,6 +401,8 @@
       $("progress-fill").style.width = "0%";
       $("progress").setAttribute("aria-valuenow", "0");
       $("results").hidden = true;
+      $("results").classList.remove("celebrating");
+      $("celebration-badge").hidden = true;
       $("quiz").hidden = false;
       renderQuestion(true);
       $("quiz").scrollIntoView({ block: "start" });
